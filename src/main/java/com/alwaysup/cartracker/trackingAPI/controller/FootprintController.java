@@ -8,30 +8,28 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alwaysup.cartracker.trackingAPI.repository.FootprintRepository;
+import com.alwaysup.cartracker.trackingAPI.service.FootprintService;
 import com.alwaysup.cartracker.trackingAPI.model.Footprint;
 
 @Controller
 public class FootprintController {
 	@Autowired
-	private FootprintRepository footprintRepository;
+	private FootprintService footprintService;
 
 	@PostMapping(path="/footprint")
-	public @ResponseBody String addNewUser (@RequestParam(required=true,name="x") int x
-			, @RequestParam(required=true,name="y") int y, @RequestParam(required=true,name="id") String userid) {
-		Footprint n = new Footprint(userid, x, y);
-		footprintRepository.save(n);
-		return "0";
+	public @ResponseBody String addNewUser (@RequestParam(required=true,name="x") float x
+			, @RequestParam(required=true,name="y") float y, @RequestParam(required=true,name="id") String userid) {
+		return footprintService.addNewUser(userid, x, y);
 	}
 
 	@GetMapping(path="/footprint")
-	public @ResponseBody String addNewUser (@RequestParam(required=true,name="id") String userid) {
-		Footprint[] steps = footprintRepository.findByuseridLike(userid);
+	public @ResponseBody String getFootprints (@RequestParam(required=true,name="id") String userid) {
+		Footprint[] steps = footprintService.getLatestFootprintOver2Days(userid);
 		String[] jsonRepr = new String[steps.length];
 		for (int i=0; i<steps.length; i++) {
-			jsonRepr[i] = String.format("{\"x\":%f, \"y\":%f, \"time\":\"%s\"}",steps[i].getXcoord(), steps[i].getYcoord(), steps[i].getTimestamp().toString());
+			jsonRepr[i] = String.format("[\"x\":%f, \"y\":%f, \"time\":\"%s\"]",steps[i].getXcoord(), steps[i].getYcoord(), steps[i].getTimestamp().toString());
 		}
-		String response = "["+ String.join(",", jsonRepr) +"]";
+		String response = "{"+ String.join(",", jsonRepr) +"}";
 		return response;
 	}
 }

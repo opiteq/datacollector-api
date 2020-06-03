@@ -25,7 +25,7 @@ public class Footprint {
 	private String userid;
 	private float xcoord, ycoord;
 	private Date timestamp;
-	public Footprint(String userid, int xcoord, int ycoord) {
+	public Footprint(String userid, float xcoord, float ycoord) {
 		this.userid = userid;
 		this.xcoord = xcoord;
 		this.ycoord = ycoord;
