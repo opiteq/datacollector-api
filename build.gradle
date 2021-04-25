@@ -29,23 +29,21 @@ ext {
 }
 
 dependencies {
-	compile 'javax.persistence:javax.persistence-api:2.2'
-	compile 'org.hibernate:hibernate-core:5.4.11.Final'
-	compile 'org.projectlombok:lombok'
+	implementation 'javax.persistence:javax.persistence-api:2.2'
+	implementation 'org.hibernate:hibernate-core:5.4.11.Final'
+	implementation 'org.projectlombok:lombok'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-amqp'
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.data:spring-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'mysql:mysql-connector-java'
 	annotationProcessor 'org.projectlombok:lombok'
-	compile 'org.springframework.data:spring-data-jpa'
-	compile 'org.springframework.boot:spring-boot-starter-data-jpa'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-	testImplementation('org.springframework.boot:spring-boot-starter-test') {
-		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-	}
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'com.unboundid:unboundid-ldapsdk'
 	testImplementation 'org.springframework.amqp:spring-rabbit-test'
 	testImplementation 'org.springframework.batch:spring-batch-test'

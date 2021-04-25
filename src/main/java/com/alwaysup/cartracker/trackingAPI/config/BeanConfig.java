@@ -9,7 +9,7 @@ import javax.persistence.EntityManagerFactory;
 @Configuration
 public class BeanConfig {
 
-	@Autowired
-	private EntityManagerFactory entityManagerFactory;
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
 }

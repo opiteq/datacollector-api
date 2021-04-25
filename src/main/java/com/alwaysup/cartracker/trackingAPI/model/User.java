@@ -4,10 +4,7 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +14,9 @@ public class User {
     @Id
     @Setter(AccessLevel.PROTECTED)
     private long id;
+    @Column(unique = true)
     private String username;
+    @Column(unique = true)
     private String email;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private List<Device> userDevices;

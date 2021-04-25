@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +13,11 @@ public class Device {
     @Id
     @Setter(AccessLevel.PROTECTED)
     private long id;
+    @Column(unique = true)
     private String imei;
     private String name;
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name = "user_id")
     private User user;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "device")
     private List<DataPoint> dataPoints;
