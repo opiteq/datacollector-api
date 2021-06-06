@@ -1,10 +1,15 @@
-package com.alwaysup.cartracker.trackingAPI.model;
+package com.alwaysup.tracker.api.model;
 
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +23,7 @@ public class User {
     private String username;
     @Column(unique = true)
     private String email;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private List<Device> userDevices;
 
     public User(String username, String email) {

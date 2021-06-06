@@ -1,6 +1,6 @@
-package com.alwaysup.cartracker.trackingAPI.repository;
+package com.alwaysup.tracker.api.repository;
 
-import com.alwaysup.cartracker.trackingAPI.model.Device;
+import com.alwaysup.tracker.api.model.Device;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface DeviceRepository extends PagingAndSortingRepository<Device, Long> {

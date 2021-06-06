@@ -1,9 +1,16 @@
-package com.alwaysup.cartracker.trackingAPI.model;
+package com.alwaysup.tracker.api.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import java.util.Date;
 
 
@@ -22,17 +29,16 @@ public class DataPoint {
      * 000 -> 0 (none)
      * 110 -> 6 (Location & Temperature)
      */
-    private int dataType;
+    private String dataType;
     private float x, y;
-    private float temp;
-    private float humidity;
+    private float value;
+    @JsonFormat(pattern = "yyyyMMddTHHmmssX")
     private Date timestamp;
 
     public DataPoint(Builder builder) {
         this.x = builder.x;
         this.y = builder.y;
-        this.temp = builder.temp;
-        this.humidity = builder.humidity;
+        this.value = builder.value;
         this.device = builder.device;
         this.dataType = builder.dataType;
         this.timestamp = new Date();
@@ -40,10 +46,9 @@ public class DataPoint {
 
     public static class Builder {
         private Device device;
-        private int dataType;
+        private String dataType;
         private float x, y;
-        private float temp;
-        private float humidity;
+        private float value;
 
         private Builder() {
         }
@@ -53,7 +58,7 @@ public class DataPoint {
             return this;
         }
 
-        public Builder setDataType(int dataType) {
+        public Builder setDataType(String dataType) {
             this.dataType = dataType;
             return this;
         }
@@ -64,13 +69,8 @@ public class DataPoint {
             return this;
         }
 
-        public Builder setTemperature(float temp) {
-            this.temp = temp;
-            return this;
-        }
-
-        public Builder setHumidity(float humidity) {
-            this.humidity = humidity;
+        public Builder setValue(float value) {
+            this.value = value;
             return this;
         }
 

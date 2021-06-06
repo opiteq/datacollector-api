@@ -1,4 +1,4 @@
-package com.alwaysup.cartracker.trackingAPI;
+package com.alwaysup.tracker.api;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
