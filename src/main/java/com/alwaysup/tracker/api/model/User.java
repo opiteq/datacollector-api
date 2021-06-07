@@ -11,7 +11,9 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -24,11 +26,11 @@ public class User {
     @Column(unique = true)
     private String email;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Device> userDevices;
+    private Set<Device> userDevices;
 
     public User(String username, String email) {
         this.username = username;
         this.email = email;
-        this.userDevices = new ArrayList<>();
+        this.userDevices = new HashSet<>();
     }
 }
