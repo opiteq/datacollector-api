@@ -36,8 +36,18 @@ public class UserServiceImpl implements UserService {
 
     public User deleteUser(long uid) {
         User user = userRepository.findById(uid).orElse(null);
+        for (Device device: user.getUserDevices()) {
+            removeDevice(user, device);
+        }
         if (user != null) {
             userRepository.delete(user);
+        }
+        return user;
+    }
+
+    public User updateUser(User user) {
+        if (user != null) {
+            userRepository.save(user);
         }
         return user;
     }
