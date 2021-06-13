@@ -1,6 +1,5 @@
 package com.alwaysup.tracker.api.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
@@ -22,18 +21,19 @@ public class DataPoint {
     @Setter(AccessLevel.PACKAGE)
     private long id;
     @ManyToOne
-    @JoinColumn(name = "device_imei")
+    @JoinColumn(name = "device_id")
     private Device device;
     /**
-     * Location/Temperature/Humidity
-     * 000 -> 0 (none)
-     * 110 -> 6 (Location & Temperature)
+     * temp(Temperature) / humd(Humidity)
      */
     private String dataType;
-    private float x, y;
-    private float value;
-    @JsonFormat(pattern = "yyyyMMddTHHmmssX")
-    private Date timestamp;
+    private double x, y;
+    private double value;
+    private long timestamp;
+
+    private DataPoint() {
+
+    }
 
     public DataPoint(Builder builder) {
         this.x = builder.x;
@@ -41,16 +41,18 @@ public class DataPoint {
         this.value = builder.value;
         this.device = builder.device;
         this.dataType = builder.dataType;
-        this.timestamp = new Date();
+        this.timestamp = (builder.timestamp == 0) ?
+                new Date().toInstant().toEpochMilli() : builder.timestamp;
     }
 
     public static class Builder {
+        public long timestamp;
         private Device device;
         private String dataType;
-        private float x, y;
-        private float value;
+        private double x, y;
+        private double value;
 
-        private Builder() {
+        public Builder() {
         }
 
         public Builder setDevice(Device device) {
@@ -63,14 +65,19 @@ public class DataPoint {
             return this;
         }
 
-        public Builder setLocation(float x, float y) {
+        public Builder setLocation(double x, double y) {
             this.x = x;
             this.y = y;
             return this;
         }
 
-        public Builder setValue(float value) {
+        public Builder setValue(double value) {
             this.value = value;
+            return this;
+        }
+
+        public Builder setTimestamp(long epoch) {
+            this.timestamp = epoch;
             return this;
         }
 

@@ -1,31 +1,69 @@
 package com.alwaysup.tracker.api.service.impl;
 
-import com.alwaysup.tracker.api.model.Device;
 import com.alwaysup.tracker.api.model.User;
+import com.alwaysup.tracker.api.model.dto.UserDTO;
 import com.alwaysup.tracker.api.repository.UserRepository;
+import com.alwaysup.tracker.api.service.DeviceService;
 import com.alwaysup.tracker.api.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
-
+@Service
 public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
 
-    public List<User> getUsers(int page, int pageSize) {
-        List<User> allUsers = userRepository.findAll(PageRequest.of(page, pageSize));
-        return allUsers;
+    @Autowired
+    private DeviceService deviceService;
+
+    @Override
+    public UserDTO getUserDtoByUsername(String username) {
+        return convertToDTO(getUserByUsername(username));
     }
 
-    public User getUser(String email) {
-        User user = userRepository.findByEmail(email).orElse(null);
-        return user;
+    @Override
+    public UserDTO addUserFromDTO(UserDTO userDto) {
+        return convertToDTO(addUser(userDto.getUsername(), userDto.getEmail()));
     }
 
-    public User addUser(String username, String email) {
+    @Override
+    public UserDTO updateUserFromDTO(UserDTO userDto) {
+        User user =
+                userRepository.findByUsername(userDto.getUsername())
+                        .orElse(null);
+        if (user != null) {
+            user.setEmail(userDto.getEmail());
+        } else {
+            user = userRepository.findByEmail(userDto.getEmail()).orElse(null);
+            if (user != null) {
+                user.setUsername(userDto.getUsername());
+            } else {
+                return null;
+            }
+        }
+        return userDto;
+    }
+
+    @Override
+    public boolean deleteUserFromDTO(UserDTO userDto) {
+        User user =
+                userRepository.findByUsername(userDto.getUsername())
+                        .orElse(null);
+        if (user == null || !user.getEmail().equals(userDto.getEmail())) {
+            return false;
+        }
+        deviceService.removeDevicesByUser(user);
+        userRepository.delete(user);
+        return true;
+    }
+
+    @Override
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    private User addUser(String username, String email) {
         User user = userRepository.findByEmail(email).orElse(null);
         if (user == null) {
             user = userRepository.save(new User(username, email));
@@ -34,49 +72,13 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
-    public User deleteUser(long uid) {
-        User user = userRepository.findById(uid).orElse(null);
-        for (Device device: user.getUserDevices()) {
-            removeDevice(user, device);
+    private UserDTO convertToDTO(User user) {
+        if (user == null) {
+            return null;
         }
-        if (user != null) {
-            userRepository.delete(user);
-        }
-        return user;
-    }
-
-    public User updateUser(User user) {
-        if (user != null) {
-            userRepository.save(user);
-        }
-        return user;
-    }
-
-    public User updateUserName(User user, String name) {
-        user.setUsername(name);
-        user = userRepository.save(user);
-        return user;
-    }
-
-    public User updateUserEmail(User user, String email) {
-        user.setEmail(email);
-        user = userRepository.save(user);
-        return user;
-    }
-
-    public User addDevice(User user, Device device) {
-        Set<Device> userDevices = user.getUserDevices();
-        userDevices.add(device);
-        user.setUserDevices(userDevices);
-        userRepository.save(user);
-        return user;
-    }
-
-    public User removeDevice(User user, Device device) {
-        Set<Device> userDevices = user.getUserDevices();
-        userDevices.remove(device);
-        user.setUserDevices(userDevices);
-        userRepository.save(user);
-        return user;
+        UserDTO userDto = new UserDTO();
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        return userDto;
     }
 }

@@ -2,60 +2,136 @@ package com.alwaysup.tracker.api.service.impl;
 
 import com.alwaysup.tracker.api.model.DataPoint;
 import com.alwaysup.tracker.api.model.Device;
+import com.alwaysup.tracker.api.model.dto.DataPointDTO;
 import com.alwaysup.tracker.api.repository.DataPointRepository;
 import com.alwaysup.tracker.api.service.DataPointService;
+import com.alwaysup.tracker.api.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.alwaysup.tracker.api.util.Constants.INVALID_UPDATE_DATA_DOES_NOT_EXIST;
-
+@Service
 public class DataPointServiceImpl implements DataPointService {
 
     @Autowired
     private DataPointRepository dataPointRepository;
 
-    //    @Override
-    public List<DataPoint> getAllDataPointsByDeviceAndDataTypeBetweenTimes(
-            Device device, String dataType, String startTimestamp, String endTimestamp, int page, int size) {
-        DateFormat format = new SimpleDateFormat("yyyyMMddTHHmmssX", Locale.ENGLISH);
-        try {
-            Date startDate = format.parse(startTimestamp);
-            Date endDate = format.parse(endTimestamp);
-            List<DataPoint> dataPoints = dataPointRepository.findByDeviceAndDataTypeBetweenTimes(device, dataType, startDate, endDate, PageRequest.of(page, size));
+    @Autowired
+    private DeviceService deviceService;
+
+    @Override
+    public List<DataPointDTO> getAllDataPointsByDevice(
+            String imei, int page, int size) {
+        return getAllDataPointsByDeviceAndDataType(imei, null, page, size);
+    }
+
+    @Override
+    public List<DataPointDTO> getAllDataPointsByDeviceAndDataType(
+            String imei, String dataType, int page, int size) {
+        List<DataPointDTO> dataPoints = new CopyOnWriteArrayList<>();
+        if (imei == null) {
             return dataPoints;
-        } catch (ParseException e) {
+        }
+        Device device = deviceService.getDeviceByImei(imei);
+        if (device == null) {
+            return dataPoints;
+        }
+        if (dataType == null) {
+            dataPointRepository.findByDeviceAndDataType(device, dataType,
+                    PageRequest.of(page, size)).forEach(dp -> {
+                dataPoints.add(convertToDTO(dp));
+            });
+        } else {
+            dataPointRepository.findByDevice(device, PageRequest.of(page,
+                    size)).forEach(dp -> {
+                dataPoints.add(convertToDTO(dp));
+            });
+        }
+        return dataPoints;
+    }
+
+    @Override
+    public DataPointDTO addDataPointFromDTO(DataPointDTO dataPoint) {
+        if (dataPoint == null || dataPoint.getDeviceDto() == null) {
             return null;
         }
-    }
-
-    //    @Override
-    public DataPoint addDataPoint(DataPoint dataPoint) {
-        dataPointRepository.save(dataPoint);
-        return dataPoint;
-    }
-
-//        @Override
-    public DataPoint updateDataPoint(DataPoint dataPoint) {
-        if (dataPointRepository.findById(dataPoint.getId()) == null) {
-            throw new IllegalArgumentException(INVALID_UPDATE_DATA_DOES_NOT_EXIST);
+        Device device =
+                deviceService
+                        .getDeviceByImei(dataPoint.getDeviceDto().getImei());
+        if (device == null) {
+            return null;
         }
-        dataPointRepository.save(dataPoint);
-        return dataPoint;
+        DataPoint createdDataPoint = new DataPoint.Builder()
+                .setDataType(dataPoint.getDataType())
+                .setTimestamp(dataPoint.getTimestamp())
+                .setLocation(dataPoint.getX(), dataPoint.getY())
+                .setDevice(device)
+                .build();
+        if (createdDataPoint == null ||
+                createdDataPoint.getDataType() == null ||
+                createdDataPoint.getDevice() == null ||
+                createdDataPoint.getTimestamp() == 0) {
+            return null;
+        }
+        return convertToDTO(dataPointRepository.save(createdDataPoint));
     }
 
-    //    @Override
-    public DataPoint deleteDataPoint(DataPoint dataPoint) {
-        if (dataPointRepository.findById(dataPoint.getId()) == null) {
-            throw new IllegalArgumentException(INVALID_UPDATE_DATA_DOES_NOT_EXIST);
+    @Override
+    public boolean addBatchDataPointsFromDTO(List<DataPointDTO> dataPoints) {
+        List<DataPointDTO> addedDataPoints = new CopyOnWriteArrayList<>();
+        try {
+            for (DataPointDTO dp : dataPoints) {
+                addedDataPoints.add(addDataPointFromDTO(dp));
+            }
+        } catch (Exception e) {
+            for (DataPointDTO dp : dataPoints) {
+                removeDataPointFromDTO(dp);
+            }
+            return false;
         }
-        dataPointRepository.delete(dataPoint);
-        return dataPoint;
+        return true;
+    }
+
+    @Override
+    public boolean removeDataPointFromDTO(DataPointDTO dataPointDto) {
+        DataPoint dp = getDataPointFromDTO(dataPointDto);
+        if (dp == null) {
+            return false;
+        }
+        dataPointRepository.delete(dp);
+        return true;
+    }
+
+    @Override
+    public void removeDataPointsByDevice(Device device) {
+        dataPointRepository.deleteByDevice(device);
+    }
+
+    private DataPoint getDataPointFromDTO(DataPointDTO dpDto) {
+        if (dpDto == null || dpDto.getDataType() == null ||
+                dpDto.getDeviceDto() == null ||
+                dpDto.getDeviceDto().getImei() == null) {
+            return null;
+        }
+        Device device =
+                deviceService.getDeviceByImei(dpDto.getDeviceDto().getImei());
+        return dataPointRepository.findByDeviceAndDataTypeAndTimestamp(device
+                , dpDto.getDataType(), dpDto.getTimestamp()).orElse(null);
+    }
+
+    private DataPointDTO convertToDTO(DataPoint dp) {
+        if (dp == null) {
+            return null;
+        }
+        DataPointDTO dpDto = new DataPointDTO();
+        dpDto.setX(dp.getX());
+        dpDto.setY(dp.getY());
+        dpDto.setDataType(dp.getDataType());
+        dpDto.setValue(dp.getValue());
+        dpDto.setTimestamp(dp.getTimestamp());
+        return dpDto;
     }
 }

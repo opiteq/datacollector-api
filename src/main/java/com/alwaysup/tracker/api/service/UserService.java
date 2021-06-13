@@ -1,29 +1,17 @@
 package com.alwaysup.tracker.api.service;
 
-import com.alwaysup.tracker.api.model.Device;
 import com.alwaysup.tracker.api.model.User;
-import org.springframework.data.domain.PageRequest;
-
-import java.util.List;
-import java.util.Set;
+import com.alwaysup.tracker.api.model.dto.UserDTO;
 
 public interface UserService {
 
-    public List<User> getUsers(int page, int pageSize);
+    UserDTO getUserDtoByUsername(String username);
 
-    public User getUser(String email);
+    UserDTO addUserFromDTO(UserDTO userDto);
 
-    public User addUser(String username, String email);
+    UserDTO updateUserFromDTO(UserDTO userDto);
 
-    public User deleteUser(long uid);
+    boolean deleteUserFromDTO(UserDTO userDto);
 
-    public User updateUserName(User user, String name);
-
-    public User updateUserEmail(User user, String email);
-
-    public User addDevice(User user, Device device);
-
-    public User removeDevice(User user, Device device);
-
-    public User updateUser(User user);
+    User getUserByUsername(String username);
 }
